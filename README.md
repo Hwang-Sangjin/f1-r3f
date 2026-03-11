@@ -1,5 +1,10 @@
 # Racing Kit for React Three Fiber
 
+> Important: this project is based on KenneyNL's Godot Starter Kit Racing.
+>
+> Original repo: https://github.com/KenneyNL/Starter-Kit-Racing
+> Twitter / X: https://x.com/KenneyNL
+
 This project is a small racing sandbox built with React, Vite, `three` `0.182+`, and `@react-three/fiber` v10 alpha. It ships with a drivable truck, keyboard controls, smoke VFX, engine and skid audio, runtime physics switching, and a WebGPU-ready render pipeline.
 
 ## Includes
