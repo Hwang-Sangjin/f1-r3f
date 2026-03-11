@@ -9,9 +9,11 @@ Title: Checkered Tile Floor
 */
 
 import * as THREE from "three";
-import React from "react";
+import { useEffect } from "react";
+import type { ThreeElements } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { GLTF } from "three-stdlib";
+import type { GLTF } from "three-stdlib";
+import { usePhysics } from "../physics/context";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -20,27 +22,53 @@ type GLTFResult = GLTF & {
   materials: {
     floor_texture: THREE.MeshStandardMaterial;
   };
-  animations: GLTFAction[];
+  animations: THREE.AnimationClip[];
 };
 
-export function Model(props: JSX.IntrinsicElements["group"]) {
+export function Floor(props: ThreeElements["group"]) {
   const { nodes, materials } = useGLTF(
-    "/checkered_tile_floor-transformed.glb",
-  ) as GLTFResult;
+    "/models/checkered_tile_floor-transformed.glb",
+  ) as unknown as GLTFResult;
+
+  const engine = usePhysics();
+
+  useEffect(() => {
+    const groundShape = engine.createBox({
+      width: 1000,
+      height: 2,
+      depth: 1000,
+    });
+
+    const body = engine.createStaticBody({
+      shape: groundShape,
+      position: { x: 0, y: -10, z: 0 },
+      orientation: { x: 0, y: 0, z: 0, w: 1 },
+      friction: 1,
+      restitution: 0,
+    });
+
+    return () => {
+      engine.destroyBody(body);
+      engine.destroyShape(groundShape);
+    };
+  }, [engine]);
+
   return (
     <group
       {...props}
       dispose={null}
       rotation={[Math.PI / 2, 0, 0]}
-      position={[0, 0, -200]}
+      position={[0, -10, 0]}
     >
       <mesh
+        receiveShadow
+        castShadow
         geometry={nodes.Object_2.geometry}
         material={materials.floor_texture}
-        rotation={[-Math.PI / 2, 0, 0]}
+        scale={1}
       />
     </group>
   );
 }
 
-useGLTF.preload("/checkered_tile_floor-transformed.glb");
+useGLTF.preload("/models/checkered_tile_floor-transformed.glb");

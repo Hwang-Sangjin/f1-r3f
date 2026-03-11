@@ -1,133 +1,130 @@
-# React Three Fiber v10 (alpha) starter
+# Racing Kit for React Three Fiber
 
-This is a minimal React + Vite starter that targets the brand‑new `@react-three/fiber` v10 alpha and `three` v0.182+. It is set up for fast iteration and a clean base for WebGL or WebGPU experiments.
+This project is a small racing sandbox built with React, Vite, `three` `0.182+`, and `@react-three/fiber` v10 alpha. It ships with a drivable truck, keyboard controls, smoke VFX, engine and skid audio, runtime physics switching, and a WebGPU-ready render pipeline.
 
-For the new v10 APIs and behaviors referenced below, see the official v10 features doc. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+## Includes
+
+- Arcade-style driving with `WASD` or arrow keys
+- Three physics backends: `bounce`, `crashcat`, and `rapier`
+- Wheel smoke particles during drifts
+- Engine and skid sounds with browser audio unlock handling
+- GLB-based vehicle and environment assets
+- Live handling tweaks through Leva controls
+- R3F v10 + WebGPU-oriented post-processing
 
 ## Getting started
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 Other scripts:
 
 ```bash
-npm run build
-npm run preview
-npm run lint
+bun run build
+bun run preview
+bun run lint
 ```
+
+## Controls
+
+| Key                                  | Action          |
+| ------------------------------------ | --------------- |
+| <kbd>W</kbd> / <kbd>ArrowUp</kbd>    | Accelerate      |
+| <kbd>S</kbd> / <kbd>ArrowDown</kbd>  | Brake / reverse |
+| <kbd>A</kbd> / <kbd>ArrowLeft</kbd>  | Steer left      |
+| <kbd>D</kbd> / <kbd>ArrowRight</kbd> | Steer right     |
+
+Notes:
+
+- Click `Activate Audio` once to enable engine and skid sounds.
+- Use the on-screen `Bounce`, `Crashcat`, and `Rapier` buttons to switch physics engines.
 
 ## Project structure
 
-- `src/main.tsx` boots React and mounts the canvas.
-- `src/App.tsx` is the root scene.
-- `src/components/*` holds reusable scene components.
-- `public/` contains static assets.
+- `src/App.tsx` mounts the canvas, audio unlock button, and physics backend switcher.
+- `src/components/PlayerController.tsx` handles input, camera follow, wheel animation, drift smoke, and vehicle audio.
+- `src/physics/*` contains the shared physics interface and the three backend implementations.
+- `src/components/floor.tsx` adds the large ground plane collider and floor model.
+- `src/components/Road.tsx` contains an optional generated road model with a triangle-mesh collider.
+- `src/components/postprocessing.tsx` sets up the WebGPU post-processing pipeline.
+- `src/audio/vehicleAudio.ts` manages looping engine and skid audio.
+- `public/models/*` stores the GLB assets.
+- `public/audio/*` stores the sound files.
+- `public/textures/*` stores the vehicle palette and smoke texture.
 
-## Using React Three Fiber v10
+## How to customize
 
-The starter is compatible with the following v10 features and APIs. These are opt‑in examples you can copy into your scene components.
+### 1. Change the default physics backend
 
-### Camera scene parenting
+The current backend is selected in `src/App.tsx` and persisted in `localStorage` under `physics-backend`.
 
-In v10, the default camera is automatically attached to the scene if it has no parent. This means camera‑attached UI (HUDs, reticles, cockpit meshes) will render correctly without extra plumbing. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+If you want a different default, change this fallback:
 
-```tsx
-import { useEffect, useRef } from 'react'
-import { useThree } from '@react-three/fiber'
-import * as THREE from 'three'
-
-export function HUD() {
-  const { camera } = useThree()
-  const group = useRef<THREE.Group>(null)
-
-  useEffect(() => {
-    if (!group.current) return
-    camera.add(group.current)
-    return () => camera.remove(group.current)
-  }, [camera])
-
-  return (
-    <group ref={group} position={[0, 0, -2]}>
-      <mesh>
-        <planeGeometry args={[0.5, 0.1]} />
-        <meshBasicMaterial color="lime" transparent opacity={0.8} />
-      </mesh>
-    </group>
-  )
-}
+```ts
+() => (localStorage.getItem("physics-backend") as PhysicsBackend) || "crashcat";
 ```
 
-### `useRenderTarget` for WebGL + WebGPU
+### 2. Tune the driving feel
 
-v10 introduces `useRenderTarget`, which returns the correct render target class for the active renderer. This keeps your post‑processing and portal effects compatible across WebGL and WebGPU builds. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+Open the Leva panel while the app is running. `src/components/PlayerController.tsx` exposes live controls for:
 
-```tsx
-import { useFrame, useRenderTarget } from '@react-three/fiber'
+- vehicle collider radius
+- drive torque
+- steering speed
+- steering smoothing
+- body settle height
+- mass, friction, restitution
+- linear and angular damping
 
-function Portal() {
-  const fbo = useRenderTarget(512, 512, { samples: 4 })
+This is the fastest way to iterate on handling before changing code.
 
-  useFrame(({ gl, scene, camera }) => {
-    gl.setRenderTarget(fbo)
-    gl.render(scene, camera)
-    gl.setRenderTarget(null)
-  })
+### 3. Add or replace the track
 
-  return (
-    <mesh>
-      <planeGeometry />
-      <meshBasicMaterial map={fbo.texture} />
-    </mesh>
-  )
-}
-```
+Right now the live scene uses the floor component. There is also a generated road component in `src/components/Road.tsx`, but it is not mounted by default.
 
-### Visibility events
+To add the included road asset, import `{ Model as Road }` from `src/components/Road.tsx` and render `<Road />` inside `PhysicsProvider` in `src/App.tsx`.
 
-v10 adds visibility events that fire on state changes, not every frame. Use them to pause animations, stream assets, or run analytics. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+To use your own track:
 
-```tsx
-function FrustumAware() {
-  return (
-    <mesh
-      onFramed={(inView) => {
-        console.log(inView ? 'entered view' : 'left view')
-      }}>
-      <boxGeometry />
-      <meshStandardMaterial />
-    </mesh>
-  )
-}
-```
+1. Put your `.glb` file in `public/models/`.
+2. Generate or update a React component for it with `gltfjsx`.
+3. Create a collider from the mesh geometry, like `src/components/Road.tsx` does with `createTriangleMeshFromGeometry`.
+4. Mount that component inside the physics provider so the collider is registered with the active backend.
 
-### Camera frustum access
+### 4. Replace the car model
 
-The root state exposes a synchronized `THREE.Frustum`, useful for custom culling or LOD logic. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+The current vehicle component is `src/Vehicle-truck-yellow.tsx`, generated from `public/models/vehicle-truck-yellow.glb`.
 
-```tsx
-import { useFrame, useThree } from '@react-three/fiber'
+If you swap the model, keep the same logical parts wired into `PlayerController`:
 
-function VisibilityController({ objects }: { objects: THREE.Object3D[] }) {
-  const { frustum } = useThree()
+- `body`
+- `wheel-front-left`
+- `wheel-front-right`
+- `wheel-back-left`
+- `wheel-back-right`
 
-  useFrame(() => {
-    for (const obj of objects) {
-      obj.visible = frustum.intersectsObject(obj)
-    }
-  })
+If your source mesh names differ, map them to the existing `meshRefs` API in the generated vehicle component so steering, wheel spin, body lean, smoke, and audio behavior still line up.
 
-  return null
-}
-```
+### 5. Change the sounds
 
-## Notes
+Replace these files to keep the current audio setup:
 
-- This starter targets `@react-three/fiber` `^10.0.0-alpha.1` and `three` `^0.182.0`.
-- For WebGPU experiments, use the `@react-three/fiber/webgpu` entry in your imports if you want to force WebGPU builds.
+- `public/audio/engine.ogg`
+- `public/audio/skid.ogg`
+
+If you want different behavior, edit `src/audio/vehicleAudio.ts` to change playback rate, volume curves, or drift thresholds.
+
+## R3F / WebGPU notes
+
+- The app uses `@react-three/fiber` `10.0.0-alpha.2`.
+- The scene loop and post-processing currently use `@react-three/fiber/webgpu`.
+- `Canvas` is mounted with `renderer={{ forceWebGL: false }}`, so browser support for newer renderer features matters.
+- Vehicle materials use `MeshStandardNodeMaterial` and TSL texture nodes.
 
 ## Credits
 
-React Three Fiber by pmndrs. See the v10 features doc for the complete list of additions and migration guidance. [v10 New Features](https://raw.githubusercontent.com/pmndrs/react-three-fiber/v10/docs/v10-features.md)
+Built on the pmndrs stack: React Three Fiber, Drei, and Three.js.
+
+Some generated asset components include source and attribution comments directly in the corresponding `.tsx` files.
