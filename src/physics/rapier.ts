@@ -3,10 +3,11 @@ import type * as THREE from "three";
 import type { PhysicsBody, PhysicsEngine, PhysicsShape } from "./types";
 
 class RapierBody implements PhysicsBody {
-  constructor(
-    private world: RAPIER.World,
-    public raw: RAPIER.RigidBody,
-  ) {}
+  public raw: RAPIER.RigidBody;
+
+  constructor(raw: RAPIER.RigidBody) {
+    this.raw = raw;
+  }
 
   getPosition() {
     const t = this.raw.translation();
@@ -20,10 +21,7 @@ class RapierBody implements PhysicsBody {
 
   addAngularVelocity(dx: number, dy: number, dz: number) {
     const av = this.raw.angvel();
-    this.raw.setAngvel(
-      { x: av.x + dx, y: av.y + dy, z: av.z + dz },
-      true,
-    );
+    this.raw.setAngvel({ x: av.x + dx, y: av.y + dy, z: av.z + dz }, true);
   }
 
   wakeUp() {
@@ -68,12 +66,12 @@ export class RapierEngine implements PhysicsEngine {
     );
   }
 
-  createTriangleMeshFromGeometry(
-    geometry: THREE.BufferGeometry,
-  ): PhysicsShape {
+  createTriangleMeshFromGeometry(geometry: THREE.BufferGeometry): PhysicsShape {
     const positionAttribute = geometry.getAttribute("position");
     if (!positionAttribute || positionAttribute.itemSize < 3) {
-      throw new Error("Triangle mesh requires a position attribute with XYZ data.");
+      throw new Error(
+        "Triangle mesh requires a position attribute with XYZ data.",
+      );
     }
 
     const vertices = new Float32Array(positionAttribute.array);
@@ -108,7 +106,7 @@ export class RapierEngine implements PhysicsEngine {
     const collider = this.world.createCollider(colliderDesc, body);
     this.bodyColliders.set(body, collider);
 
-    return new RapierBody(this.world, body);
+    return new RapierBody(body);
   }
 
   createStaticBody(opts: {
@@ -121,7 +119,11 @@ export class RapierEngine implements PhysicsEngine {
     const bodyDesc = RAPIER.RigidBodyDesc.fixed();
 
     if (opts.position) {
-      bodyDesc.setTranslation(opts.position.x, opts.position.y, opts.position.z);
+      bodyDesc.setTranslation(
+        opts.position.x,
+        opts.position.y,
+        opts.position.z,
+      );
     }
     if (opts.orientation) {
       bodyDesc.setRotation(opts.orientation);
@@ -140,7 +142,7 @@ export class RapierEngine implements PhysicsEngine {
     const collider = this.world.createCollider(colliderDesc, body);
     this.bodyColliders.set(body, collider);
 
-    return new RapierBody(this.world, body);
+    return new RapierBody(body);
   }
 
   destroyBody(body: PhysicsBody) {

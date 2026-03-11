@@ -17,10 +17,13 @@ import type * as THREE from "three";
 import type { PhysicsBody, PhysicsEngine, PhysicsShape } from "./types";
 
 class CrashcatBody implements PhysicsBody {
-  constructor(
-    private world: World,
-    public raw: RigidBody,
-  ) {}
+  private world: World;
+  public raw: RigidBody;
+
+  constructor(world: World, raw: RigidBody) {
+    this.world = world;
+    this.raw = raw;
+  }
 
   getPosition() {
     const p = this.raw.position;
@@ -91,12 +94,12 @@ export class CrashcatEngine implements PhysicsEngine {
     });
   }
 
-  createTriangleMeshFromGeometry(
-    geometry: THREE.BufferGeometry,
-  ): PhysicsShape {
+  createTriangleMeshFromGeometry(geometry: THREE.BufferGeometry): PhysicsShape {
     const positionAttribute = geometry.getAttribute("position");
     if (!positionAttribute || positionAttribute.itemSize < 3) {
-      throw new Error("Triangle mesh requires a position attribute with XYZ data.");
+      throw new Error(
+        "Triangle mesh requires a position attribute with XYZ data.",
+      );
     }
 
     const positions = Array.from(positionAttribute.array);

@@ -25,12 +25,11 @@ export const PostProcessing = () => {
         0.0,
         1.0,
       );
-      let color = acesFilmic;
       // S-curve contrast: pow((x / midpoint), contrast) * midpoint  for x < midpoint, mirrored above
       const mid = float(MIDPOINT);
       const exp = float(CONTRAST);
-      const normalized = color.div(mid);
-      color = pow(normalized, exp).mul(mid);
+      const normalized = acesFilmic.div(mid);
+      const color = pow(normalized, exp).mul(mid);
 
       // Vignette
       const vignette = screenUV
@@ -40,7 +39,10 @@ export const PostProcessing = () => {
         .clamp()
         .oneMinus();
 
-      postProcessing.outputNode = color.clamp(0, 0.9);
+      postProcessing.outputNode = color
+        .mul(vignette)
+        .add(bloomPass.mul(0.2))
+        .clamp(0, 0.9);
 
       return { beauty, velocity: vel };
     },

@@ -1,6 +1,6 @@
-import { useTexture } from "@react-three/drei/webgpu";
+import { useTexture } from "@react-three/drei";
 import { VFXParticles } from "r3f-vfx";
-import { color, mix, texture, uv, vec4 } from "three/tsl";
+import { color, texture, uv, vec4 } from "three/tsl";
 
 export const Smoke = () => {
   const text = useTexture("/textures/smoke.png");

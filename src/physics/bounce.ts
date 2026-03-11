@@ -1,10 +1,19 @@
 import { World } from "@perplexdotgg/bounce";
-import type { Body } from "@perplexdotgg/bounce";
+import type {
+  Body,
+  DynamicShape,
+  Shape,
+  StaticShape,
+} from "@perplexdotgg/bounce";
 import type * as THREE from "three";
 import type { PhysicsBody, PhysicsEngine, PhysicsShape } from "./types";
 
 class BounceBody implements PhysicsBody {
-  constructor(public raw: Body) {}
+  public raw: Body;
+
+  constructor(raw: Body) {
+    this.raw = raw;
+  }
 
   getPosition() {
     return this.raw.position;
@@ -52,12 +61,12 @@ export class BounceEngine implements PhysicsEngine {
     return this.world.createBox(opts);
   }
 
-  createTriangleMeshFromGeometry(
-    geometry: THREE.BufferGeometry,
-  ): PhysicsShape {
+  createTriangleMeshFromGeometry(geometry: THREE.BufferGeometry): PhysicsShape {
     const positionAttribute = geometry.getAttribute("position");
     if (!positionAttribute || positionAttribute.itemSize < 3) {
-      throw new Error("Triangle mesh requires a position attribute with XYZ data.");
+      throw new Error(
+        "Triangle mesh requires a position attribute with XYZ data.",
+      );
     }
 
     const vertexPositions = new Float32Array(positionAttribute.array);
@@ -78,7 +87,7 @@ export class BounceEngine implements PhysicsEngine {
     angularDamping: number;
   }): PhysicsBody {
     const body = this.world.createDynamicBody({
-      shape: opts.shape,
+      shape: opts.shape as DynamicShape,
       position: opts.position,
       friction: opts.friction,
       restitution: opts.restitution,
@@ -97,7 +106,7 @@ export class BounceEngine implements PhysicsEngine {
     restitution?: number;
   }): PhysicsBody {
     const body = this.world.createStaticBody({
-      shape: opts.shape,
+      shape: opts.shape as StaticShape,
       position: opts.position,
       orientation: opts.orientation,
       friction: opts.friction,
@@ -111,7 +120,7 @@ export class BounceEngine implements PhysicsEngine {
   }
 
   destroyShape(shape: PhysicsShape) {
-    this.world.destroyShape(shape);
+    this.world.destroyShape(shape as Shape);
   }
 
   destroy() {
