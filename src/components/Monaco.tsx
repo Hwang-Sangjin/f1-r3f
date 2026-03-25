@@ -1,7 +1,32 @@
+import * as THREE from "three";
 import { useGLTF } from "@react-three/drei";
+import { useEffect, useRef } from "react";
+import { usePhysics } from "../physics/context";
 
 export function Monaco(props) {
   const { nodes } = useGLTF("/models/Monaco.glb");
+  const colliderMeshRef = useRef<THREE.Mesh>(null);
+  const engine = usePhysics();
+
+  useEffect(() => {
+    const colliderMesh = colliderMeshRef.current;
+    if (!colliderMesh) return;
+
+    colliderMesh.updateWorldMatrix(true, false);
+    const colliderGeometry = colliderMesh.geometry.clone();
+    colliderGeometry.applyMatrix4(colliderMesh.matrixWorld);
+
+    const shape = engine.createTriangleMeshFromGeometry(colliderGeometry);
+    colliderGeometry.dispose();
+
+    const body = engine.createStaticBody({ shape });
+
+    return () => {
+      engine.destroyBody(body);
+      engine.destroyShape(shape);
+    };
+  }, [engine]);
+
   return (
     <group
       position={[0, -10, 0]}
@@ -10,7 +35,7 @@ export function Monaco(props) {
       {...props}
       dispose={null}
     >
-      <mesh receiveShadow geometry={nodes.Cube.geometry}>
+      <mesh ref={colliderMeshRef} receiveShadow geometry={nodes.Cube.geometry}>
         <meshStandardMaterial color="#444444" />
       </mesh>
     </group>
