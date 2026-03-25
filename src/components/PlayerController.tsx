@@ -115,7 +115,15 @@ export const PlayerController = () => {
       engine.destroyBody(sphere);
       engine.destroyShape(sphereShape);
     };
-  }, [engine, playerRadius, mass, friction, restitution, linearDamping, angularDamping]);
+  }, [
+    engine,
+    playerRadius,
+    mass,
+    friction,
+    restitution,
+    linearDamping,
+    angularDamping,
+  ]);
 
   const handleInput = (delta: number) => {
     const body = bodyRef.current;
@@ -173,10 +181,7 @@ export const PlayerController = () => {
 
     wheelSpinQuaternion.setFromAxisAngle(RIGHT, wheelSpinRef.current);
 
-    for (const wheel of [
-      wheelBackLeftRef.current,
-      wheelBackRightRef.current,
-    ]) {
+    for (const wheel of [wheelBackLeftRef.current, wheelBackRightRef.current]) {
       if (wheel) {
         wheel.quaternion.copy(wheelSpinQuaternion);
       }
@@ -200,9 +205,7 @@ export const PlayerController = () => {
   const updateSteering = (delta: number, vehicleYaw: Object3D) => {
     const direction =
       Math.sign(linearSpeedRef.current) ||
-      (Math.abs(inputRef.current.z) > 0.1
-        ? Math.sign(inputRef.current.z)
-        : 1);
+      (Math.abs(inputRef.current.z) > 0.1 ? Math.sign(inputRef.current.z) : 1);
     const steeringGrip = MathUtils.clamp(
       Math.abs(linearSpeedRef.current),
       0.2,
@@ -269,16 +272,8 @@ export const PlayerController = () => {
     Math.abs(vehicleBodyRef.current?.rotation.z ?? 0) * 2;
 
   const effectAudio = (delta: number, driftIntensity: number) => {
-    const speedFactor = MathUtils.clamp(
-      Math.abs(linearSpeedRef.current),
-      0,
-      1,
-    );
-    const throttleFactor = MathUtils.clamp(
-      Math.abs(inputRef.current.z),
-      0,
-      1,
-    );
+    const speedFactor = MathUtils.clamp(Math.abs(linearSpeedRef.current), 0, 1);
+    const throttleFactor = MathUtils.clamp(Math.abs(inputRef.current.z), 0, 1);
 
     updateVehicleEngine(speedFactor, throttleFactor, delta);
     updateVehicleSkid(driftIntensity, linearSpeedRef.current, delta);

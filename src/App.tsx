@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Lights } from "./components/lights";
-import { KeyboardControls } from "@react-three/drei";
+import { KeyboardControls, OrbitControls } from "@react-three/drei";
 import { PlayerController } from "./components/PlayerController";
 import {
   activateVehicleAudio,
@@ -12,6 +12,7 @@ import { Smoke } from "./components/dust";
 import { PostProcessing } from "./components/postprocessing";
 import { PhysicsProvider } from "./physics/context";
 import type { PhysicsBackend } from "./physics/types";
+import { Monaco } from "./components/Monaco";
 
 function AudioUnlockButton() {
   const [enabled, setEnabled] = useState(() => isVehicleAudioActive());
@@ -116,7 +117,8 @@ function PhysicsToggle({
 
 function App() {
   const [backend, setBackend] = useState<PhysicsBackend>(
-    () => (localStorage.getItem("physics-backend") as PhysicsBackend) || "crashcat",
+    () =>
+      (localStorage.getItem("physics-backend") as PhysicsBackend) || "crashcat",
   );
 
   const handleBackendChange = (b: PhysicsBackend) => {
@@ -134,9 +136,16 @@ function App() {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <AudioUnlockButton />
       <PhysicsToggle backend={backend} onChange={handleBackendChange} />
-      <Canvas key={backend} flat shadows renderer={{ forceWebGL: false }} hmr={true}>
+      <Canvas
+        key={backend}
+        flat
+        shadows
+        renderer={{ forceWebGL: false }}
+        hmr={true}
+      >
         <Lights />
         <PhysicsProvider backend={backend}>
+          <Monaco />
           <Floor />
           <Smoke />
           <KeyboardControls map={controls}>
