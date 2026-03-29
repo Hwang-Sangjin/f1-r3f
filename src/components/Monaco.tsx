@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePhysics } from "../physics/context";
 
 export function Monaco(props) {
-  const { nodes } = useGLTF("/models/Monaco.glb");
+  const { nodes } = useGLTF("/models/Monaco.glb") as any;
   const colliderMeshRef = useRef<THREE.Mesh>(null);
   const engine = usePhysics();
 
@@ -12,7 +12,9 @@ export function Monaco(props) {
     const colliderMesh = colliderMeshRef.current;
     if (!colliderMesh) return;
 
+    colliderMesh.parent?.updateWorldMatrix(true, true);
     colliderMesh.updateWorldMatrix(true, false);
+
     const colliderGeometry = colliderMesh.geometry.clone();
     colliderGeometry.applyMatrix4(colliderMesh.matrixWorld);
 
@@ -35,7 +37,11 @@ export function Monaco(props) {
       {...props}
       dispose={null}
     >
-      <mesh ref={colliderMeshRef} receiveShadow geometry={nodes.Cube.geometry}>
+      <mesh
+        ref={colliderMeshRef}
+        receiveShadow
+        geometry={nodes.Cube003.geometry}
+      >
         <meshStandardMaterial color="#444444" />
       </mesh>
     </group>
