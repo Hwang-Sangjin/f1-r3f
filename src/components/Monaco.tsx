@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePhysics } from "../physics/context";
 
 export function Monaco(props) {
-  const { nodes } = useGLTF("/models/Monaco.glb") as any;
+  const { nodes } = useGLTF("/models/test.glb") as any;
   const colliderMeshRef = useRef<THREE.Mesh>(null);
   const engine = usePhysics();
 
@@ -13,10 +13,16 @@ export function Monaco(props) {
     if (!colliderMesh) return;
 
     colliderMesh.parent?.updateWorldMatrix(true, true);
-    colliderMesh.updateWorldMatrix(true, false);
+    colliderMesh.updateWorldMatrix(true, true); // ← true, true 로 변경
 
     const colliderGeometry = colliderMesh.geometry.clone();
     colliderGeometry.applyMatrix4(colliderMesh.matrixWorld);
+
+    console.log(
+      "collision Y position:",
+      colliderMesh.getWorldPosition(new THREE.Vector3()).y,
+    );
+    console.log("matrixWorld:", colliderMesh.matrixWorld.elements);
 
     const shape = engine.createTriangleMeshFromGeometry(colliderGeometry);
     colliderGeometry.dispose();
@@ -31,7 +37,7 @@ export function Monaco(props) {
 
   return (
     <group
-      position={[0, -10, 0]}
+      position={[0, -11, 0]}
       rotation={[0, Math.PI / 2, 0]}
       scale={[7, 0.91, 7]}
       {...props}
@@ -48,4 +54,4 @@ export function Monaco(props) {
   );
 }
 
-useGLTF.preload("/models/Monaco.glb");
+useGLTF.preload("/models/test.glb");

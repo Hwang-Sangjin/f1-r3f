@@ -114,17 +114,8 @@ function PhysicsToggle({
     </div>
   );
 }
-
 function App() {
-  const [backend, setBackend] = useState<PhysicsBackend>(
-    () =>
-      (localStorage.getItem("physics-backend") as PhysicsBackend) || "crashcat",
-  );
-
-  const handleBackendChange = (b: PhysicsBackend) => {
-    localStorage.setItem("physics-backend", b);
-    setBackend(b);
-  };
+  const [backend] = useState<PhysicsBackend>("rapier");
 
   const controls = [
     { name: "forward", keys: ["ArrowUp", "KeyW"] },
@@ -132,10 +123,10 @@ function App() {
     { name: "left", keys: ["ArrowLeft", "KeyA"] },
     { name: "right", keys: ["ArrowRight", "KeyD"] },
   ];
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <AudioUnlockButton />
-      <PhysicsToggle backend={backend} onChange={handleBackendChange} />
       <Canvas
         key={backend}
         flat
@@ -146,8 +137,6 @@ function App() {
         <Lights />
         <PhysicsProvider backend={backend}>
           <Monaco />
-          <Floor />
-          <Smoke />
           <KeyboardControls map={controls}>
             <PlayerController />
           </KeyboardControls>

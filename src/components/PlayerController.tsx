@@ -98,7 +98,7 @@ export const PlayerController = () => {
     shapeRef.current = sphereShape;
     const sphere = engine.createDynamicBody({
       shape: sphereShape,
-      position: [0, 2, 0],
+      position: [0, -9, 0], // ← 트랙 Y(-11) 기준 위로 조정
       friction,
       restitution,
       mass,
