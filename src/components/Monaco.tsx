@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import { usePhysics } from "../physics/context";
 
 export function Monaco(props) {
-  const { nodes } = useGLTF("/models/Monaco_Height.glb") as any;
+  const { nodes: collisionNodes } = useGLTF(
+    "/models/Monaco_Height1.glb",
+  ) as any;
   const colliderMeshRef = useRef<THREE.Mesh>(null);
   const engine = usePhysics();
 
@@ -13,16 +15,10 @@ export function Monaco(props) {
     if (!colliderMesh) return;
 
     colliderMesh.parent?.updateWorldMatrix(true, true);
-    colliderMesh.updateWorldMatrix(true, true); // ← true, true 로 변경
+    colliderMesh.updateWorldMatrix(true, true);
 
     const colliderGeometry = colliderMesh.geometry.clone();
     colliderGeometry.applyMatrix4(colliderMesh.matrixWorld);
-
-    console.log(
-      "collision Y position:",
-      colliderMesh.getWorldPosition(new THREE.Vector3()).y,
-    );
-    console.log("matrixWorld:", colliderMesh.matrixWorld.elements);
 
     const shape = engine.createTriangleMeshFromGeometry(colliderGeometry);
     colliderGeometry.dispose();
@@ -43,11 +39,13 @@ export function Monaco(props) {
       {...props}
       dispose={null}
     >
-      <mesh ref={colliderMeshRef} receiveShadow geometry={nodes.road.geometry}>
-        <meshStandardMaterial color="#444444" />
-      </mesh>
+      <mesh
+        ref={colliderMeshRef}
+        geometry={collisionNodes.Cube011.geometry}
+        visible={false}
+      />
     </group>
   );
 }
 
-useGLTF.preload("/models/Monaco_Height.glb");
+useGLTF.preload("/models/Monaco_Height1.glb");

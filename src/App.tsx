@@ -13,6 +13,7 @@ import { PostProcessing } from "./components/postprocessing";
 import { PhysicsProvider } from "./physics/context";
 import type { PhysicsBackend } from "./physics/types";
 import { Monaco } from "./components/Monaco";
+import { MonacoVisual } from "./components/MonacoVisual";
 
 function AudioUnlockButton() {
   const [enabled, setEnabled] = useState(() => isVehicleAudioActive());
@@ -136,7 +137,8 @@ function App() {
       >
         <Lights />
         <PhysicsProvider backend={backend}>
-          <Monaco />
+          <Monaco /> {/* collision */}
+          <MonacoVisual />
           <KeyboardControls map={controls}>
             <PlayerController />
           </KeyboardControls>
